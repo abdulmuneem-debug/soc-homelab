@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOC Home Lab — Adnan Qasmi</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #0a0c10;
+    --surface: #0f1318;
+    --card: #141920;
+    --border: #1e2a38;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+    --display: 'Share Tech Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,212,255,0.015) 2px,
+      rgba(0,212,255,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,212,255,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 80% 80%, rgba(124,58,237,0.07) 0%, transparent 60%);
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .hero-eyebrow::before,
+  .hero-eyebrow::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 1px;
+    background: var(--accent);
+    opacity: 0.5;
+  }
+
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(2.2rem, 6vw, 4.5rem);
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  .hero-title span {
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(0,212,255,0.5);
+  }
+
+  .hero-sub {
+    font-family: var(--mono);
+    font-size: 1rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  .hero-desc {
+    max-width: 620px;
+    color: #94a3b8;
+    font-size: 1rem;
+    margin-bottom: 2.5rem;
+    line-height: 1.8;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 3rem;
+  }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    border: 1px solid;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .tag-blue  { border-color: rgba(0,212,255,0.4); color: var(--accent); background: rgba(0,212,255,0.06); }
+  .tag-purple{ border-color: rgba(124,58,237,0.4); color: #a78bfa; background: rgba(124,58,237,0.06); }
+  .tag-green { border-color: rgba(34,197,94,0.4); color: var(--green); background: rgba(34,197,94,0.06); }
+  .tag-red   { border-color: rgba(239,68,68,0.4); color: var(--red); background: rgba(239,68,68,0.06); }
+  .tag-yellow{ border-color: rgba(245,158,11,0.4); color: var(--yellow); background: rgba(245,158,11,0.06); }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    animation: bounce 2s ease-in-out infinite;
+  }
+  .scroll-hint::after { content: '▼'; font-size: 0.65rem; color: var(--accent); }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+
+  /* ── SECTION ── */
+  section { padding: 5rem 0; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+
+  .section-title {
+    font-family: var(--display);
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    color: #fff;
+    margin-bottom: 1.25rem;
+  }
+
+  .section-body {
+    color: #94a3b8;
+    max-width: 680px;
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+  }
+
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ── ARCHITECTURE GRID ── */
+  .arch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .arch-card {
+    background: var(--card);
+    padding: 1.75rem;
+    transition: background 0.2s;
+  }
+  .arch-card:hover { background: #1a2230; }
+
+  .arch-icon {
+    font-size: 1.6rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .arch-name {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.35rem;
+  }
+
+  .arch-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 0.4rem;
+  }
+
+  .arch-detail { font-size: 0.85rem; color: var(--muted); }
+
+  /* ── STEP BLOCKS ── */
+  .step-list { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .step {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  .step-num {
+    font-family: var(--display);
+    font-size: 1.4rem;
+    color: var(--accent);
+    opacity: 0.35;
+    line-height: 1;
+    padding-top: 3px;
+  }
+
+  .step-content {}
+  .step-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #e2e8f0;
+    margin-bottom: 0.35rem;
+  }
+  .step-body { color: #64748b; font-size: 0.9rem; line-height: 1.7; }
+
+  /* ── SCREENSHOT CARDS ── */
+  .screenshot-section { display: flex; flex-direction: column; gap: 3.5rem; }
+
+  .ss-block {}
+
+  .ss-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .ss-num {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.25);
+    border-radius: 3px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .ss-tool {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .ss-title {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    color: #fff;
+    margin-bottom: 0.6rem;
+  }
+
+  .ss-desc { color: #94a3b8; font-size: 0.9rem; line-height: 1.75; margin-bottom: 1.25rem; }
+
+  /* Screenshot placeholder / image frame */
+  .ss-frame {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--card);
+    position: relative;
+  }
+
+  .ss-frame::before {
+    content: '';
+    display: block;
+    height: 28px;
+    background: #0f1318;
+    border-bottom: 1px solid var(--border);
+    background-image: radial-gradient(circle, #334155 3px, transparent 3px),
+                      radial-gradient(circle, #334155 3px, transparent 3px),
+                      radial-gradient(circle, #334155 3px, transparent 3px);
+    background-size: 14px 28px, 14px 28px, 14px 28px;
+    background-position: 12px center, 26px center, 40px center;
+    background-repeat: no-repeat;
+  }
+
+  .ss-frame img {
+    width: 100%;
+    display: block;
+    max-height: 400px;
+    object-fit: cover;
+    object-position: top;
+  }
+
+  /* Code highlight blocks */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    padding: 1rem 1.25rem;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: #7dd3fc;
+    line-height: 1.7;
+    margin: 1rem 0;
+    overflow-x: auto;
+  }
+
+  .code-block .c-keyword { color: #c084fc; }
+  .code-block .c-string  { color: #86efac; }
+  .code-block .c-comment { color: #475569; font-style: italic; }
+  .code-block .c-red     { color: #f87171; }
+  .code-block .c-yellow  { color: #fbbf24; }
+
+  /* ── FINDING CARDS ── */
+  .findings { display: flex; flex-direction: column; gap: 1rem; }
+
+  .finding {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    overflow: hidden;
+  }
+
+  .finding-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .severity {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 3px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .sev-critical { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.35); }
+  .sev-high     { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.35); }
+  .sev-medium   { background: rgba(124,58,237,0.15); color: #a78bfa; border: 1px solid rgba(124,58,237,0.35); }
+  .sev-info     { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.25); }
+
+  .finding-title { font-weight: 600; font-size: 0.95rem; color: #e2e8f0; }
+
+  .finding-body {
+    padding: 1rem 1.25rem;
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.7;
+  }
+
+  /* ── SKILLS MATRIX ── */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  .skill-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.9rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .skill-item:hover { border-color: rgba(0,212,255,0.3); background: #1a2230; }
+  .skill-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot-blue   { background: var(--accent); box-shadow: 0 0 8px rgba(0,212,255,0.5); }
+  .dot-green  { background: var(--green);  box-shadow: 0 0 8px rgba(34,197,94,0.5); }
+  .dot-purple { background: #a78bfa;        box-shadow: 0 0 8px rgba(167,139,250,0.5); }
+  .dot-yellow { background: var(--yellow); box-shadow: 0 0 8px rgba(245,158,11,0.5); }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 3rem 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .footer-name {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    color: var(--accent);
+    margin-bottom: 0.35rem;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-top: 0.75rem;
+  }
+
+  .footer-links a {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--accent); text-decoration: none; }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width: 600px) {
+    .arch-grid { grid-template-columns: 1fr; }
+    .step { grid-template-columns: 40px 1fr; }
+    .skills-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* Inline badge */
+  .inline-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 3px;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.2);
+    color: var(--accent);
+    vertical-align: middle;
+    margin: 0 2px;
+  }
+
+  .highlight { color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════ HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">Home Lab Write-Up</div>
+  <h1 class="hero-title">SOC Analyst<br><span>Home Lab Setup</span></h1>
+  <p class="hero-sub">// Kali Linux · Splunk Enterprise · Wireshark · VirusTotal</p>
+  <p class="hero-desc">
+    A self-built threat detection and investigation lab running on VirtualBox. 
+    Covers environment setup, SIEM ingestion, CTF-based threat hunting, 
+    and malware analysis — all on a personal laptop with zero budget.
+  </p>
+  <div class="tags">
+    <span class="tag tag-blue">Splunk SIEM</span>
+    <span class="tag tag-purple">Kali Linux VM</span>
+    <span class="tag tag-green">Wireshark PCAP</span>
+    <span class="tag tag-red">LFI Detection</span>
+    <span class="tag tag-yellow">VirusTotal</span>
+    <span class="tag tag-blue">CyberDefenders CTF</span>
+    <span class="tag tag-purple">VirtualBox</span>
+    <span class="tag tag-green">Windows 10 VM</span>
+  </div>
+  <div class="scroll-hint">scroll</div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════ LAB ARCHITECTURE -->
+<section>
+  <div class="container">
+    <p class="section-label">01 · Lab Architecture</p>
+    <h2 class="section-title">What's Running in This Lab</h2>
+    <p class="section-body">
+      The entire lab runs on an HP ProBook 440 G6 (8GB RAM) using Oracle VirtualBox. 
+      Two VMs are configured — a Kali Linux attack/analysis box and a Windows 10 VM 
+      acting as the log source. Splunk Enterprise is installed locally and ingests 
+      Windows Event Logs for SIEM practice.
+    </p>
+
+    <div class="arch-grid">
+      <div class="arch-card">
+        <div class="arch-icon">🖥️</div>
+        <div class="arch-name">Host Machine</div>
+        <div class="arch-value">HP ProBook 440 G6</div>
+        <div class="arch-detail">8GB RAM · Windows 11 · VirtualBox 7.x</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">🐉</div>
+        <div class="arch-name">VM 1 — Analyst Box</div>
+        <div class="arch-value">Kali Linux (64-bit)</div>
+        <div class="arch-detail">80GB VDI · NAT Network · Saved Snapshot</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">🪟</div>
+        <div class="arch-name">VM 2 — Log Source</div>
+        <div class="arch-value">Windows 10</div>
+        <div class="arch-detail">Splunk UF · Windows Event Logs · CBS Logs</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">📊</div>
+        <div class="arch-name">SIEM</div>
+        <div class="arch-value">Splunk Enterprise</div>
+        <div class="arch-detail">localhost:8000 · index=main · 111K+ events</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">🦈</div>
+        <div class="arch-name">Packet Analysis</div>
+        <div class="arch-value">Wireshark</div>
+        <div class="arch-detail">PCAP forensics · HTTP stream follow · TCP filter</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">🦠</div>
+        <div class="arch-name">Threat Intel</div>
+        <div class="arch-value">VirusTotal</div>
+        <div class="arch-detail">Hash lookup · Graph analysis · IOC mapping</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════ SETUP STEPS -->
+<section>
+  <div class="container">
+    <p class="section-label">02 · Setup Process</p>
+    <h2 class="section-title">How I Built It</h2>
+    <p class="section-body">
+      Step-by-step process to replicate this environment from scratch.
+    </p>
+
+    <div class="step-list">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <div class="step-title">Install VirtualBox and Create VMs</div>
+          <div class="step-body">Downloaded Oracle VirtualBox 7.x on Windows. Created two VMs: Kali Linux (80GB dynamic VDI, 2GB RAM, NAT network) and Windows 10. Took a saved snapshot of Kali after base configuration so I can roll back anytime.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <div class="step-title">Configure Kali Linux Analyst Environment</div>
+          <div class="step-body">Installed Wireshark, updated package lists, and verified sudo access. Used <span class="inline-badge">sudo su</span> for root sessions when needed. Set up Firefox with VirusTotal and CyberDefenders bookmarks for CTF work.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <div class="step-title">Install Splunk Enterprise on Windows VM</div>
+          <div class="step-body">Installed Splunk Enterprise on the Windows 10 VM. Configured it to ingest Windows Event Logs (System, Security, Application) and CBS logs from <span class="inline-badge">C:\Windows\Logs\CBS\</span>. Splunk accessible at <span class="inline-badge">localhost:8000</span>.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-content">
+          <div class="step-title">Verify Log Ingestion in Splunk</div>
+          <div class="step-body">Ran <span class="inline-badge">index=main</span> to confirm data flow. Verified 111,228+ events were indexed correctly with proper source, host, and timestamp fields. Confirmed TrustedInstaller and system log events were parsing as expected.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">05</div>
+        <div class="step-content">
+          <div class="step-title">Practice on CyberDefenders Blue Team CTFs</div>
+          <div class="step-body">Loaded challenge PCAPs (like WebStrike) into Wireshark on the Kali VM. Practiced following HTTP streams, extracting IOCs, identifying attack techniques, and correlating findings with VirusTotal threat intelligence.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════ SCREENSHOTS WALKTHROUGH -->
+<section>
+  <div class="container">
+    <p class="section-label">03 · Lab in Action</p>
+    <h2 class="section-title">Screenshots Walkthrough</h2>
+    <p class="section-body">A visual tour of key activities performed in this lab environment.</p>
+
+    <div class="screenshot-section">
+
+      <!-- Screenshot 1: VirtualBox -->
+      <div class="ss-block">
+        <div class="ss-meta">
+          <span class="ss-num">SS-01</span>
+          <span class="ss-tool">VirtualBox Manager</span>
+        </div>
+        <div class="ss-title">Dual VM Lab Environment</div>
+        <div class="ss-desc">
+          Oracle VirtualBox showing the two-VM setup: <strong style="color:#e2e8f0">Kali Linux</strong> (Snapshot 1, Saved state) as the analyst workstation and <strong style="color:#e2e8f0">Windows 10</strong> as the log-generating endpoint. The Kali VM runs on 80GB VDI storage with NAT networking — isolated but internet-accessible for threat intel lookups.
+        </div>
+        <div class="ss-frame">
+          <!-- Simulated screenshot representation with structured info -->
+          <div style="padding:1.5rem; background:#0f1318; font-family:var(--mono); font-size:0.82rem; line-height:1.9;">
+            <div style="color:#22c55e; margin-bottom:0.5rem;">▶ VirtualBox Manager — VM List</div>
+            <div style="color:#7dd3fc;">📦 kali linux (Snapshot 1) &nbsp;<span style="color:#22c55e">[Saved]</span></div>
+            <div style="color:#94a3b8; padding-left:1.5rem; font-size:0.75rem;">OS: Other Linux (64-bit) · Storage: 80GB VDI · Network: Intel PRO/1000 NAT</div>
+            <div style="color:#7dd3fc; margin-top:0.5rem;">📦 windows vr &nbsp;<span style="color:#475569">[Powered Off]</span></div>
+            <div style="color:#94a3b8; padding-left:1.5rem; font-size:0.75rem;">OS: Windows 10 · Role: Log Source / Splunk Host</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot 2: Splunk blank -->
+      <div class="ss-block">
+        <div class="ss-meta">
+          <span class="ss-num">SS-02</span>
+          <span class="ss-tool">Splunk Enterprise</span>
+        </div>
+        <div class="ss-title">Splunk SIEM — Search Interface</div>
+        <div class="ss-desc">
+          Splunk Enterprise running at <span class="inline-badge">localhost:8000</span>. The Search & Reporting app is open and ready for SPL (Search Processing Language) queries. Kali Linux terminal visible in the background confirms the analyst session is active with root privileges via <span class="inline-badge">sudo su</span>.
+        </div>
+        <div class="code-block">
+          <span class="c-comment"># Basic SPL to verify data ingestion</span><br>
+          <span class="c-keyword">index</span>=main <span class="c-keyword">| head</span> 10<br><br>
+          <span class="c-comment"># Search for specific log source</span><br>
+          <span class="c-keyword">index</span>=main <span class="c-keyword">source</span>=<span class="c-string">"C:\\Windows\\Logs\\CBS\\CBS.log"</span>
+        </div>
+      </div>
+
+      <!-- Screenshot 3: Splunk results -->
+      <div class="ss-block">
+        <div class="ss-meta">
+          <span class="ss-num">SS-03</span>
+          <span class="ss-tool">Splunk Enterprise · index=main</span>
+        </div>
+        <div class="ss-title">111,228 Windows Events Indexed</div>
+        <div class="ss-desc">
+          Running <span class="inline-badge">index=main</span> returned <strong style="color:#22c55e">111,228 events</strong> from June 10–11, 2026. Events sourced from <span class="inline-badge">C:\Windows\Logs\CBS</span> — the Component Based Servicing log which tracks Windows Update and component installation activity. The TrustedInstaller process entries are clearly visible, useful for baselining normal system behavior.
+        </div>
+        <div class="code-block">
+          <span class="c-comment"># Query used</span><br>
+          <span class="c-keyword">index</span>=main<br><br>
+          <span class="c-comment"># Result: 111,228 events (6/10/26 10:30 AM to 6/11/26 11:05 AM)</span><br>
+          <span class="c-comment"># Source: C:\Windows\Logs\CBS\CBS.log</span><br>
+          <span class="c-comment"># Host: 1 · date_second: 60 · source: 4</span>
+        </div>
+        <div class="findings">
+          <div class="finding">
+            <div class="finding-header">
+              <span class="severity sev-info">INFO</span>
+              <span class="finding-title">TrustedInstaller Activity — Normal Baseline</span>
+            </div>
+            <div class="finding-body">
+              TrustedInstaller.exe is a legitimate Windows process responsible for installing, modifying, and removing Windows updates. Seeing it in CBS.log is expected behavior. In SOC work, baselining this kind of normal activity is essential before writing detection rules.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot 4: Wireshark WebStrike CTF -->
+      <div class="ss-block">
+        <div class="ss-meta">
+          <span class="ss-num">SS-04</span>
+          <span class="ss-tool">CyberDefenders CTF · WebStrike · Wireshark</span>
+        </div>
+        <div class="ss-title">Detected: LFI Attack via HTTP POST</div>
+        <div class="ss-desc">
+          In the <strong style="color:#e2e8f0">WebStrike</strong> challenge on CyberDefenders, I analyzed a PCAP file to identify an active web attack. Using Wireshark's "Follow HTTP Stream" on TCP stream 14, I identified a <span class="tag tag-red" style="font-size:0.7rem">Local File Inclusion</span> attack. The attacker sent a POST request using <span class="inline-badge">curl/7.81.0</span> with <span class="inline-badge">/etc/passwd</span> as the payload body — a classic LFI attempt to read sensitive Linux system files.
+        </div>
+        <div class="code-block">
+          <span class="c-comment"># HTTP Stream captured from tcp.stream eq 14</span><br><br>
+          <span class="c-keyword">POST</span> / HTTP/1.1<br>
+          Host: <span class="c-yellow">117.11.88.124:443</span><br>
+          User-Agent: <span class="c-red">curl/7.81.0</span><br>
+          Accept: */*<br>
+          Content-Length: 11<br>
+          Content-Type: <span class="c-string">application/x-www-form-urlencoded</span><br><br>
+          <span class="c-red">/etc/passwd</span> &nbsp;&nbsp;<span class="c-comment">← LFI payload</span>
+        </div>
+        <div class="findings">
+          <div class="finding">
+            <div class="finding-header">
+              <span class="severity sev-critical">CRITICAL</span>
+              <span class="finding-title">Local File Inclusion (LFI) — /etc/passwd Exfiltration Attempt</span>
+            </div>
+            <div class="finding-body">
+              <strong style="color:#e2e8f0">Source IP:</strong> 24.49.63.79 &nbsp;→&nbsp; <strong style="color:#e2e8f0">Destination:</strong> 117.11.88.124:443<br>
+              <strong style="color:#e2e8f0">Method:</strong> POST &nbsp;·&nbsp; <strong style="color:#e2e8f0">Tool:</strong> curl/7.81.0 (automated)<br>
+              <strong style="color:#e2e8f0">ATT&CK Technique:</strong> T1083 — File and Directory Discovery / LFI<br>
+              The attacker leveraged a vulnerable web form to attempt path traversal and read <code style="color:#f87171">/etc/passwd</code>, which would reveal system usernames. Curl's User-Agent suggests a scripted/automated attack.
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-header">
+              <span class="severity sev-high">HIGH</span>
+              <span class="finding-title">Non-Browser User-Agent on HTTPS Port</span>
+            </div>
+            <div class="finding-body">
+              Traffic from curl on port 443 is a red flag in web server logs. Legitimate users rarely send curl requests to production web applications. This is a strong indicator of automated exploitation tooling.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot 5: VirusTotal Graph -->
+      <div class="ss-block">
+        <div class="ss-meta">
+          <span class="ss-num">SS-05</span>
+          <span class="ss-tool">VirusTotal Graph · Malware Analysis</span>
+        </div>
+        <div class="ss-title">Malware Hash — Threat Relationship Graph</div>
+        <div class="ss-desc">
+          Used VirusTotal Graph to map the threat infrastructure around a suspicious file hash. The graph visualizes the hash's relationships to <strong style="color:#e2e8f0">communicating files</strong>, dropped files, and network IOCs — showing how this sample connects to a broader malware campaign. This technique is core to SOC Tier 2+ investigation workflows.
+        </div>
+        <div class="code-block">
+          <span class="c-comment"># File hash analyzed (SHA-256)</span><br>
+          <span class="c-yellow">30e527e45f50d2ba82865c5679a6fa998ee0a1755361ab01673950810d071c85</span><br><br>
+          <span class="c-comment"># VT Graph findings</span><br>
+          Type: <span class="c-red">PEDLL</span> (PE Dynamic Link Library — likely injector/dropper)<br>
+          Relationships: <span class="c-string">Communicating Files</span> → multiple PEX nodes<br>
+          Author: <span class="c-yellow">awesomeadnan</span> &nbsp;<span class="c-comment">← custom graph by Adnan</span>
+        </div>
+        <div class="findings">
+          <div class="finding">
+            <div class="finding-header">
+              <span class="severity sev-critical">CRITICAL</span>
+              <span class="finding-title">PEDLL Sample with Multiple Communicating Files</span>
+            </div>
+            <div class="finding-body">
+              The hash belongs to a PE DLL file (labeled PEDLL on VirusTotal), which indicates it likely functions as a dropper, loader, or injected module. The graph shows it communicating with multiple PE executable files — suggesting it drops or fetches secondary payloads. This is typical of staged malware like RATs or stealers.
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-header">
+              <span class="severity sev-medium">MEDIUM</span>
+              <span class="finding-title">Graph-Based IOC Expansion Technique Used</span>
+            </div>
+            <div class="finding-body">
+              By pivoting from the initial hash to related nodes on VirusTotal Graph, additional IOCs (IPs, domains, child hashes) can be extracted for threat hunting rules in Splunk or firewall blocklists. This is a standard threat intelligence enrichment workflow.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════ SKILLS DEMONSTRATED -->
+<section>
+  <div class="container">
+    <p class="section-label">04 · Skills Demonstrated</p>
+    <h2 class="section-title">What This Lab Covers</h2>
+
+    <div class="skills-grid">
+      <div class="skill-item"><span class="skill-dot dot-blue"></span>VM provisioning (VirtualBox)</div>
+      <div class="skill-item"><span class="skill-dot dot-green"></span>Splunk SPL queries</div>
+      <div class="skill-item"><span class="skill-dot dot-blue"></span>Log ingestion & indexing</div>
+      <div class="skill-item"><span class="skill-dot dot-purple"></span>PCAP / Wireshark analysis</div>
+      <div class="skill-item"><span class="skill-dot dot-red" style="background:var(--red);box-shadow:0 0 8px rgba(239,68,68,0.5)"></span>LFI attack identification</div>
+      <div class="skill-item"><span class="skill-dot dot-yellow"></span>VirusTotal threat intel</div>
+      <div class="skill-item"><span class="skill-dot dot-blue"></span>HTTP stream forensics</div>
+      <div class="skill-item"><span class="skill-dot dot-purple"></span>MITRE ATT&CK mapping</div>
+      <div class="skill-item"><span class="skill-dot dot-green"></span>IOC extraction & enrichment</div>
+      <div class="skill-item"><span class="skill-dot dot-blue"></span>Blue Team CTF (CyberDefenders)</div>
+      <div class="skill-item"><span class="skill-dot dot-yellow"></span>Windows event log analysis</div>
+      <div class="skill-item"><span class="skill-dot dot-purple"></span>Malware relationship graphing</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════ TOOLS USED -->
+<section>
+  <div class="container">
+    <p class="section-label">05 · Tools & Platforms</p>
+    <h2 class="section-title">Everything Used</h2>
+
+    <div class="arch-grid">
+      <div class="arch-card">
+        <div class="arch-name">Oracle VirtualBox</div>
+        <div class="arch-detail">Hypervisor for running isolated Kali Linux and Windows 10 VMs on the same machine</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-name">Kali Linux</div>
+        <div class="arch-detail">Analyst OS with Wireshark, nmap, and security tooling pre-installed</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-name">Splunk Enterprise</div>
+        <div class="arch-detail">Free license SIEM for log ingestion, search, and visualization of Windows event data</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-name">Wireshark</div>
+        <div class="arch-detail">Network protocol analyzer for PCAP inspection, stream following, and packet dissection</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-name">VirusTotal</div>
+        <div class="arch-detail">IOC enrichment platform — file hash lookups, graph pivoting, and malware relationship mapping</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-name">CyberDefenders</div>
+        <div class="arch-detail">Blue Team CTF platform for realistic investigation scenarios including WebStrike PCAP challenge</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════ FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-name">Adnan Qasmi</div>
+    <div style="color:var(--muted); font-size:0.85rem; margin-top:0.25rem;">
+      SOC Analyst (Entry Level) · Bengaluru, India
+    </div>
+    <div class="footer-links">
+      <a href="https://linkedin.com/in/adnanqasmi" target="_blank">LinkedIn</a>
+      <a href="https://github.com/adnanqasmi" target="_blank">GitHub</a>
+      <a href="https://tryhackme.com" target="_blank">TryHackMe</a>
+    </div>
+    <div style="margin-top:2rem; font-family:var(--mono); font-size:0.7rem; color:#1e293b;">
+      built with: curiosity + free tools + zero excuses
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
